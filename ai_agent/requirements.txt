@@ -1,0 +1,17 @@
+flask
+flask_cors
+python-dotenv
+langchain-core
+langchain-openai
+langchain-google-genai
+langchain-community
+langfuse
+langgraph
+typing-extensions
+faiss-cpu
+langchain
+unstructured
+pdf2image
+unstructured_inference
+pip
+requests
