@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { ChevronDown, ChevronUp, Send, Settings, Paperclip, X } from 'lucide-react' // Import X icon for delete
-import chatsData from '@/data/chats.json'; // Import the JSON data
+import { ChevronDown, ChevronUp, Send, Settings, Paperclip, X, Plus } from 'lucide-react' // Import X and Plus icons
 import { Button } from '@/components/ui/button'; // Import Button component
 import {
   Dialog,
@@ -14,6 +13,8 @@ import {
 import ReactMarkdown from 'react-markdown'; // Import ReactMarkdown
 import remarkGfm from 'remark-gfm'; // Import remarkGfm for GitHub Flavored Markdown
 import remarkBreaks from 'remark-breaks'; // Import remarkBreaks for handling single newlines
+import { useToast } from '@/components/ui/use-toast'; // Import useToast hook
+import { Toaster } from '@/components/ui/toaster'; // Import Toaster component
 
 const DEFAULT_LEFT_PANEL_WIDTH = 250;
 const DEFAULT_RIGHT_PANEL_WIDTH = 250;
@@ -56,15 +57,17 @@ export default function ThreePanelLayout() {
   // Chat specific states
   const [messages, setMessages] = useState([
     { id: 1, text: 'Hello! How can I assist you with your contract today?', sender: 'ai' },
-    { id: 2, text: 'I need help reviewing a sales agreement.', sender: 'user' },
-    { id: 3, text: 'Please upload the document or paste the text here.', sender: 'ai' },
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const messageIdCounter = useRef(messages.length); // Counter for unique message IDs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null); // Ref for the hidden file input
 
+  // Uploaded files state
+  const [uploadedFiles, setUploadedFiles] = useState<{ id: string; name: string }[]>([]);
+
   const containerRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast(); // Initialize useToast
 
   // Load state from localStorage on component mount
   useEffect(() => {
@@ -87,6 +90,7 @@ export default function ThreePanelLayout() {
     if (savedContractVisible !== null) {
       setIsContractVisible(JSON.parse(savedContractVisible));
     }
+    fetchUploadedFiles(); // Fetch files on component mount
   }, []);
 
   // Save states to localStorage whenever they change
@@ -211,22 +215,69 @@ export default function ThreePanelLayout() {
     }
   };
 
+  const fetchUploadedFiles = async () => {
+    try {
+      const response = await fetch('/api/files');
+      if (response.ok) {
+        const files = await response.json();
+        setUploadedFiles(files);
+      } else {
+        console.error('Failed to fetch uploaded files:', await response.json());
+      }
+    } catch (error) {
+      console.error('Error fetching uploaded files:', error);
+    }
+  };
+
   const handleUploadClick = () => {
     fileInputRef.current?.click(); // Programmatically click the hidden file input
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      const fileName = files[0].name;
-      const newUserMessage = { id: ++messageIdCounter.current, text: `Uploaded file: ${fileName}`, sender: 'user' };
-      setMessages(prevMessages => [...prevMessages, newUserMessage]);
+      const file = files[0];
+      const formData = new FormData();
+      formData.append('file', file);
 
-      // Simulate AI response for file upload
-      setTimeout(() => {
-        const newAiMessage = { id: ++messageIdCounter.current, text: `Received "${fileName}". I'll start processing it now.`, sender: 'ai' };
-        setMessages(prevMessages => [...prevMessages, newAiMessage]);
-      }, 1000);
+      toast({
+        title: "Uploading file...",
+        description: `"${file.name}" is being uploaded.`,
+        duration: 3000,
+      });
+
+      try {
+        const response = await fetch('/api/files/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          toast({
+            title: "Upload successful!",
+            description: `"${data.filename}" has been uploaded.`,
+            duration: 3000,
+          });
+          fetchUploadedFiles(); // Refresh the list of uploaded files
+        } else {
+          const errorData = await response.json();
+          toast({
+            title: "Upload failed!",
+            description: `Error uploading "${file.name}": ${errorData.error || 'Unknown error'}`,
+            variant: "destructive",
+            duration: 5000,
+          });
+        }
+      } catch (error) {
+        console.error('Error during file upload:', error);
+        toast({
+          title: "Upload failed!",
+          description: `Network error during upload of "${file.name}".`,
+          variant: "destructive",
+          duration: 5000,
+        });
+      }
 
       // Clear the file input value to allow re-uploading the same file
       event.target.value = '';
@@ -235,6 +286,46 @@ export default function ThreePanelLayout() {
 
   const handleDeleteMessage = (id: number) => {
     setMessages(messages.filter(message => message.id !== id));
+  };
+
+  const handleDeleteUploadedFile = async (filename: string) => {
+    try {
+      const response = await fetch(`/api/files/${filename}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        setUploadedFiles(prevFiles => prevFiles.filter(file => file.id !== filename));
+        toast({
+          title: "File deleted!",
+          description: `"${filename}" has been removed.`,
+          duration: 3000,
+        });
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to delete file:', errorData);
+        toast({
+          title: "Deletion failed!",
+          description: `Error deleting "${filename}": ${errorData.error || 'Unknown error'}`,
+          variant: "destructive",
+          duration: 5000,
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      toast({
+          title: "Deletion failed!",
+          description: `Network error deleting "${filename}".`,
+          variant: "destructive",
+          duration: 5000,
+        });
+    }
+  };
+
+  const handleNewChat = () => {
+    setMessages([
+      { id: ++messageIdCounter.current, text: 'Hello! How can I assist you with your contract today?', sender: 'ai' },
+    ]);
+    setInputMessage('');
   };
 
   return (
@@ -249,26 +340,48 @@ export default function ThreePanelLayout() {
         {!isLeftPanelCollapsed && (
           <>
             <div className="p-4 flex-1 overflow-auto custom-scrollbar">
+              {/* New Chat Button */}
+              <Button
+                onClick={handleNewChat}
+                className="w-full bg-blue-600 text-white hover:bg-blue-700 mb-4"
+              >
+                <Plus className="mr-2 h-4 w-4" /> New Chat
+              </Button>
+
               {/* Search Bar */}
               <input
                 type="text"
-                placeholder="Search chats..."
+                placeholder="Search files..."
                 className="w-full p-2 mb-4 border border-gray-700 rounded-md bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <h2 className="text-xl font-bold mb-4">Recent Chats</h2>
+              <h2 className="text-xl font-bold mb-4">Uploaded Files</h2>
               <p className="text-sm">{""}</p>
               <p className="text-xs mt-2">{""}</p>
               <div className="mt-4 text-xs text-gray-400">
                 <p>{""}</p>
                 <p>{""}</p>
               </div>
-              {/* Recent chat list */}
+              {/* Uploaded files list */}
               <div className="h-[300px] bg-gray-800 mt-4 p-2 rounded-md overflow-auto custom-scrollbar">
-                {chatsData.map((chat) => (
-                  <p key={chat.id} className="py-1 text-sm cursor-pointer hover:bg-gray-700 rounded-sm">
-                    {chat.title}
-                  </p>
-                ))}
+                {uploadedFiles.length === 0 ? (
+                  <p className="text-gray-400 text-center py-4">No files uploaded yet.</p>
+                ) : (
+                  uploadedFiles.map((file) => (
+                    <div key={file.id} className="relative group py-1 text-sm cursor-pointer hover:bg-gray-700 rounded-sm flex items-center justify-between pr-8">
+                      <span className="flex-1 truncate">{file.name}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent triggering parent click
+                          handleDeleteUploadedFile(file.id);
+                        }}
+                        className="absolute top-1/2 -translate-y-1/2 right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        aria-label={`Delete file ${file.name}`}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
             {/* Settings Button */}
@@ -477,6 +590,7 @@ export default function ThreePanelLayout() {
           </div>
         </DialogContent>
       </Dialog>
+      <Toaster /> {/* Add the Toaster component here */}
     </div>
   )
 }

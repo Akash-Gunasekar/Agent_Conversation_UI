@@ -1,4 +1,4 @@
-// File: C:\Users\AkashGunasekar\Downloads\three-panel-layout\app\layout.tsx
+// File: C:\Users\AkashGunasekar\Downloads\Agent_Conversation_UI\app\layout.tsx
 import * as entry from '../../../app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

@@ -5,7 +5,7 @@ export async function POST(request: Request) {
     const { message, history } = await request.json();
 
     // Hardcoded Python backend URL as requested
-    const pythonBackendUrl = 'http://localhost:5000';
+    const pythonBackendUrl = 'http://10.10.10.151:5000';
 
     const response = await fetch(`${pythonBackendUrl}/chat`, {
       method: 'POST',
