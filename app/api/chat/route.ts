@@ -1,11 +1,22 @@
 import { NextResponse } from 'next/server';
 
+// No need for require('dotenv').config() in Next.js API routes
+// Next.js automatically loads .env, .env.local, etc., at startup
+
 export async function POST(request: Request) {
   try {
     const { message, history } = await request.json();
 
-    // Hardcoded Python backend URL as requested
-    const pythonBackendUrl = 'http://10.10.10.151:5000';
+    const pythonBackendUrl = process.env.PYTHON_BACKEND_URL;
+
+    // Fail early if env var is missing
+    if (!pythonBackendUrl) {
+      console.error('❌ Environment variable PYTHON_BACKEND_URL is missing.');
+      return NextResponse.json(
+        { error: 'Server configuration error: PYTHON_BACKEND_URL is not set.' },
+        { status: 500 }
+      );
+    }
 
     const response = await fetch(`${pythonBackendUrl}/chat`, {
       method: 'POST',
@@ -18,7 +29,10 @@ export async function POST(request: Request) {
     if (!response.ok) {
       const errorData = await response.json();
       console.error('Python backend error:', errorData);
-      return NextResponse.json({ error: 'Failed to get response from backend', details: errorData }, { status: response.status });
+      return NextResponse.json(
+        { error: 'Failed to get response from backend', details: errorData },
+        { status: response.status }
+      );
     }
 
     const data = await response.json();

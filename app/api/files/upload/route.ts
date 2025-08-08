@@ -14,7 +14,16 @@ export async function POST(request: Request) {
     }
 
     // Use env so it works in dev/prod/containers
-    const pythonBackendUrl = 'http://10.10.10.151:5000';
+    const pythonBackendUrl = process.env.PYTHON_BACKEND_URL;
+
+    // Fail early if env var is missing
+    if (!pythonBackendUrl) {
+      console.error('❌ Environment variable PYTHON_BACKEND_URL is missing.');
+      return NextResponse.json(
+        { error: 'Server configuration error: PYTHON_BACKEND_URL is not set.' },
+        { status: 500 }
+      );
+    }
 
     const resp = await fetch(`${pythonBackendUrl}/upload`, {
       method: 'POST',
