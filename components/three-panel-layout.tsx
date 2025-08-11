@@ -1,30 +1,31 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { ChevronDown, ChevronUp, Send, Settings, Paperclip, X, Plus } from 'lucide-react' // Import X and Plus icons
-import { Button } from '@/components/ui/button'; // Import Button component
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'; // Import Dialog components
-import ReactMarkdown from 'react-markdown'; // Import ReactMarkdown
-import remarkGfm from 'remark-gfm'; // Import remarkGfm for GitHub Flavored Markdown
-import remarkBreaks from 'remark-breaks'; // Import remarkBreaks for handling single newlines
-import { useToast } from '@/components/ui/use-toast'; // Import useToast hook
-import { Toaster } from '@/components/ui/toaster'; // Import Toaster component
+import type React from "react"
 
-const DEFAULT_LEFT_PANEL_WIDTH = 250;
-const DEFAULT_RIGHT_PANEL_WIDTH = 250;
-const COLLAPSED_PANEL_WIDTH = 48; // Width for collapsed panels to show the button
+import { useState, useEffect, useRef, useCallback } from "react"
+import { ChevronDown, ChevronUp, Send, Settings, Paperclip, X, Plus } from "lucide-react" // Import X and Plus icons
+import { Button } from "@/components/ui/button" // Import Button component
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog" // Import Dialog components
+import ReactMarkdown from "react-markdown" // Import ReactMarkdown
+import remarkGfm from "remark-gfm" // Import remarkGfm for GitHub Flavored Markdown
+import remarkBreaks from "remark-breaks" // Import remarkBreaks for handling single newlines
+import { useToast } from "@/components/ui/use-toast" // Import useToast hook
+import { Toaster } from "@/components/ui/toaster" // Import Toaster component
+import LogoutButton from "@/components/ui/logout-button" // Import logout
+
+const DEFAULT_LEFT_PANEL_WIDTH = 250
+const DEFAULT_RIGHT_PANEL_WIDTH = 450
+const COLLAPSED_PANEL_WIDTH = 48 // Width for collapsed panels to show the button
 
 // Custom SVG icon for panel toggles
 const PanelToggleIcon = ({ isCollapsed, isLeftPanel }: { isCollapsed: boolean; isLeftPanel: boolean }) => {
   const transform = isLeftPanel
-    ? (isCollapsed ? 'scaleX(-1)' : 'scaleX(1)') // Flip for left panel when collapsed
-    : (isCollapsed ? 'scaleX(1)' : 'scaleX(-1)'); // Flip for right panel when expanded
+    ? isCollapsed
+      ? "scaleX(-1)"
+      : "scaleX(1)" // Flip for left panel when collapsed
+    : isCollapsed
+      ? "scaleX(1)"
+      : "scaleX(-1)" // Flip for right panel when expanded
 
   return (
     <svg
@@ -36,297 +37,318 @@ const PanelToggleIcon = ({ isCollapsed, isLeftPanel }: { isCollapsed: boolean; i
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ transform: transform, transition: 'transform 0.3s ease-in-out' }}
+      style={{ transform: transform, transition: "transform 0.3s ease-in-out" }}
     >
       <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
       <line x1="9" y1="3" x2="9" y2="21"></line>
     </svg>
-  );
-};
+  )
+}
 
 export default function ThreePanelLayout() {
-  const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
-  const [rightPanelWidth, setRightPanelWidth] = useState(DEFAULT_RIGHT_PANEL_WIDTH);
-  const [isDragging, setIsDragging] = useState(false);
-  const [initialMouseX, setInitialMouseX] = useState(0);
-  const [initialRightPanelWidth, setInitialRightPanelWidth] = useState(0);
-  const [isTableVisible, setIsTableVisible] = useState(true); // New state for table visibility
-  const [isContractVisible, setIsContractVisible] = useState(true); // New state for contract visibility
-  const [showSettingsModal, setShowSettingsModal] = useState(false); // State for settings modal
+  const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false)
+  const [rightPanelWidth, setRightPanelWidth] = useState(DEFAULT_RIGHT_PANEL_WIDTH)
+  const [isDragging, setIsDragging] = useState(false)
+  const [initialMouseX, setInitialMouseX] = useState(0)
+  const [initialRightPanelWidth, setInitialRightPanelWidth] = useState(0)
+  const [isTableVisible, setIsTableVisible] = useState(true) // New state for table visibility
+  const [isContractVisible, setIsContractVisible] = useState(true) // New state for contract visibility
+  const [showSettingsModal, setShowSettingsModal] = useState(false) // State for settings modal
 
   // Chat specific states
   const [messages, setMessages] = useState([
-    { id: 1, text: 'Hello! How can I assist you with your contract today?', sender: 'ai' },
-  ]);
-  const [inputMessage, setInputMessage] = useState('');
-  const messageIdCounter = useRef(messages.length); // Counter for unique message IDs
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null); // Ref for the hidden file input
+    { id: 1, text: "Hello! How can I assist you with your contract today?", sender: "ai" },
+    { id: 2, text: "I need help reviewing a sales agreement.", sender: "user" },
+    { id: 3, text: "Please upload the document or paste the text here.", sender: "ai" },
+  ])
+  const [inputMessage, setInputMessage] = useState("")
+  const messageIdCounter = useRef(messages.length) // Counter for unique message IDs
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null) // Ref for the hidden file input
 
   // Uploaded files state
-  const [uploadedFiles, setUploadedFiles] = useState<{ id: string; name: string }[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<{ id: string; name: string }[]>([])
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast(); // Initialize useToast
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { toast } = useToast() // Initialize useToast
 
   // Load state from localStorage on component mount
   useEffect(() => {
-    const savedLeftState = localStorage.getItem('isLeftPanelCollapsed');
-    const savedRightWidth = localStorage.getItem('rightPanelWidth');
-    const savedTableVisible = localStorage.getItem('isTableVisible'); // Load new state
-    const savedContractVisible = localStorage.getItem('isContractVisible'); // Load new state
+    const savedLeftState = localStorage.getItem("isLeftPanelCollapsed")
+    const savedRightWidth = localStorage.getItem("rightPanelWidth")
+    const savedTableVisible = localStorage.getItem("isTableVisible") // Load new state
+    const savedContractVisible = localStorage.getItem("isContractVisible") // Load new state
 
     if (savedLeftState !== null) {
-      setIsLeftPanelCollapsed(JSON.parse(savedLeftState));
+      setIsLeftPanelCollapsed(JSON.parse(savedLeftState))
     }
     if (savedRightWidth !== null) {
-      setRightPanelWidth(parseFloat(savedRightWidth));
+      setRightPanelWidth(Number.parseFloat(savedRightWidth))
     } else {
-      setRightPanelWidth(DEFAULT_RIGHT_PANEL_WIDTH);
+      setRightPanelWidth(DEFAULT_RIGHT_PANEL_WIDTH)
     }
     if (savedTableVisible !== null) {
-      setIsTableVisible(JSON.parse(savedTableVisible));
+      setIsTableVisible(JSON.parse(savedTableVisible))
     }
     if (savedContractVisible !== null) {
-      setIsContractVisible(JSON.parse(savedContractVisible));
+      setIsContractVisible(JSON.parse(savedContractVisible))
     }
-    fetchUploadedFiles(); // Fetch files on component mount
-  }, []);
+    fetchUploadedFiles() // Fetch files on component mount
+  }, [])
 
   // Save states to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('isLeftPanelCollapsed', JSON.stringify(isLeftPanelCollapsed));
-  }, [isLeftPanelCollapsed]);
+    localStorage.setItem("isLeftPanelCollapsed", JSON.stringify(isLeftPanelCollapsed))
+  }, [isLeftPanelCollapsed])
 
   useEffect(() => {
-    localStorage.setItem('rightPanelWidth', rightPanelWidth.toString());
-  }, [rightPanelWidth]);
+    localStorage.setItem("rightPanelWidth", rightPanelWidth.toString())
+  }, [rightPanelWidth])
 
   useEffect(() => {
-    localStorage.setItem('isTableVisible', JSON.stringify(isTableVisible)); // Save new state
-  }, [isTableVisible]);
+    localStorage.setItem("isTableVisible", JSON.stringify(isTableVisible)) // Save new state
+  }, [isTableVisible])
 
   useEffect(() => {
-    localStorage.setItem('isContractVisible', JSON.stringify(isContractVisible)); // Save new state
-  }, [isContractVisible]);
+    localStorage.setItem("isContractVisible", JSON.stringify(isContractVisible)) // Save new state
+  }, [isContractVisible])
 
   // Scroll to bottom of messages whenever messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
 
   const toggleLeftPanel = () => {
-    setIsLeftPanelCollapsed(!isLeftPanelCollapsed);
-  };
+    setIsLeftPanelCollapsed(!isLeftPanelCollapsed)
+  }
 
   const toggleRightPanel = () => {
-    setRightPanelWidth(prevWidth => (prevWidth === COLLAPSED_PANEL_WIDTH ? DEFAULT_RIGHT_PANEL_WIDTH : COLLAPSED_PANEL_WIDTH));
-  };
+    setRightPanelWidth((prevWidth) =>
+      prevWidth === COLLAPSED_PANEL_WIDTH ? DEFAULT_RIGHT_PANEL_WIDTH : COLLAPSED_PANEL_WIDTH,
+    )
+  }
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    setIsDragging(true);
-    setInitialMouseX(e.clientX);
-    setInitialRightPanelWidth(rightPanelWidth);
-  }, [rightPanelWidth]);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      setIsDragging(true)
+      setInitialMouseX(e.clientX)
+      setInitialRightPanelWidth(rightPanelWidth)
+    },
+    [rightPanelWidth],
+  )
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging) return;
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging) return
 
-    const dx = initialMouseX - e.clientX;
-    let newWidth = initialRightPanelWidth + dx;
+      const dx = initialMouseX - e.clientX
+      let newWidth = initialRightPanelWidth + dx
 
-    if (containerRef.current) {
-      const maxRightWidth = containerRef.current.offsetWidth * 0.75;
-      newWidth = Math.max(COLLAPSED_PANEL_WIDTH, Math.min(newWidth, maxRightWidth));
-    }
+      if (containerRef.current) {
+        const maxRightWidth = containerRef.current.offsetWidth * 0.75
+        newWidth = Math.max(COLLAPSED_PANEL_WIDTH, Math.min(newWidth, maxRightWidth))
+      }
 
-    setRightPanelWidth(newWidth);
-  }, [isDragging, initialMouseX, initialRightPanelWidth]);
+      setRightPanelWidth(newWidth)
+    },
+    [isDragging, initialMouseX, initialRightPanelWidth],
+  )
 
   const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-  }, []);
+    setIsDragging(false)
+  }, [])
 
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener("mousemove", handleMouseMove)
+      document.addEventListener("mouseup", handleMouseUp)
     } else {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove)
+      document.removeEventListener("mouseup", handleMouseUp)
     }
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+      document.removeEventListener("mousemove", handleMouseMove)
+      document.removeEventListener("mouseup", handleMouseUp)
+    }
+  }, [isDragging, handleMouseMove, handleMouseUp])
 
   const handleSendMessage = async () => {
-    if (inputMessage.trim() === '') return;
+    if (inputMessage.trim() === "") return
 
-    const userMessageId = ++messageIdCounter.current;
-    const newUserMessage = { id: userMessageId, text: inputMessage, sender: 'user' };
-    setMessages(prevMessages => [...prevMessages, newUserMessage]);
-    setInputMessage('');
+    const userMessageId = ++messageIdCounter.current
+    const newUserMessage = { id: userMessageId, text: inputMessage, sender: "user" }
+    setMessages((prevMessages) => [...prevMessages, newUserMessage])
+    setInputMessage("")
 
-    const thinkingMessageId = ++messageIdCounter.current;
-    setMessages(prevMessages => [...prevMessages, { id: thinkingMessageId, text: 'Thinking...', sender: 'ai', isThinking: true }]);
+    const thinkingMessageId = ++messageIdCounter.current
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { id: thinkingMessageId, text: "Thinking...", sender: "ai", isThinking: true },
+    ])
 
     try {
       // Prepare history for the backend, excluding the temporary thinking message
-      const historyForBackend = messages.map(msg => ({
-        role: msg.sender === 'user' ? 'user' : 'assistant',
+      const historyForBackend = messages.map((msg) => ({
+        role: msg.sender === "user" ? "user" : "assistant",
         content: msg.text,
-      }));
+      }))
 
-      const response = await fetch('/api/chat', { // Call the Next.js API route
-        method: 'POST',
+      const response = await fetch("/api/chat", {
+        // Call the Next.js API route
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           message: newUserMessage.text,
           history: historyForBackend,
         }),
-      });
+      })
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('API call failed:', errorData);
-        setMessages(prevMessages => prevMessages.filter(msg => msg.id !== thinkingMessageId).concat({ id: ++messageIdCounter.current, text: 'Error: Could not get response.', sender: 'ai' }));
-        return;
+        const errorData = await response.json()
+        console.error("API call failed:", errorData)
+        setMessages((prevMessages) =>
+          prevMessages
+            .filter((msg) => msg.id !== thinkingMessageId)
+            .concat({ id: ++messageIdCounter.current, text: "Error: Could not get response.", sender: "ai" }),
+        )
+        return
       }
 
-      const data = await response.json();
-      const aiResponseText = data.response; // Extract the 'response' field
+      const data = await response.json()
+      const aiResponseText = data.response // Extract the 'response' field
 
-      const newAiMessage = { id: ++messageIdCounter.current, text: aiResponseText, sender: 'ai' };
-      setMessages(prevMessages => prevMessages.filter(msg => msg.id !== thinkingMessageId).concat(newAiMessage));
-
+      const newAiMessage = { id: ++messageIdCounter.current, text: aiResponseText, sender: "ai" }
+      setMessages((prevMessages) => prevMessages.filter((msg) => msg.id !== thinkingMessageId).concat(newAiMessage))
     } catch (error) {
-      console.error('Error sending message:', error);
-      setMessages(prevMessages => prevMessages.filter(msg => msg.id !== thinkingMessageId).concat({ id: ++messageIdCounter.current, text: 'Error: Network issue or server problem.', sender: 'ai' }));
+      console.error("Error sending message:", error)
+      setMessages((prevMessages) =>
+        prevMessages
+          .filter((msg) => msg.id !== thinkingMessageId)
+          .concat({ id: ++messageIdCounter.current, text: "Error: Network issue or server problem.", sender: "ai" }),
+      )
     }
-  };
+  }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSendMessage();
+    if (e.key === "Enter") {
+      handleSendMessage()
     }
-  };
+  }
 
   const fetchUploadedFiles = async () => {
     try {
-      const response = await fetch('/api/files');
+      const response = await fetch("/api/files")
       if (response.ok) {
-        const files = await response.json();
-        setUploadedFiles(files);
+        const files = await response.json()
+        setUploadedFiles(files)
       } else {
-        console.error('Failed to fetch uploaded files:', await response.json());
+        console.error("Failed to fetch uploaded files:", await response.json())
       }
     } catch (error) {
-      console.error('Error fetching uploaded files:', error);
+      console.error("Error fetching uploaded files:", error)
     }
-  };
+  }
 
   const handleUploadClick = () => {
-    fileInputRef.current?.click(); // Programmatically click the hidden file input
-  };
+    fileInputRef.current?.click() // Programmatically click the hidden file input
+  }
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
+    const files = event.target.files
     if (files && files.length > 0) {
-      const file = files[0];
-      const formData = new FormData();
-      formData.append('file', file);
+      const file = files[0]
+      const formData = new FormData()
+      formData.append("file", file)
 
       toast({
         title: "Uploading file...",
         description: `"${file.name}" is being uploaded.`,
         duration: 3000,
-      });
+      })
 
       try {
-        const response = await fetch('/api/files/upload', {
-          method: 'POST',
+        const response = await fetch("/api/files/upload", {
+          method: "POST",
           body: formData,
-        });
+        })
 
         if (response.ok) {
-          const data = await response.json();
+          const data = await response.json()
           toast({
             title: "Upload successful!",
             description: `"${data.filename}" has been uploaded.`,
             duration: 3000,
-          });
-          fetchUploadedFiles(); // Refresh the list of uploaded files
+          })
+          fetchUploadedFiles() // Refresh the list of uploaded files
         } else {
-          const errorData = await response.json();
+          const errorData = await response.json()
           toast({
             title: "Upload failed!",
-            description: `Error uploading "${file.name}": ${errorData.error || 'Unknown error'}`,
+            description: `Error uploading "${file.name}": ${errorData.error || "Unknown error"}`,
             variant: "destructive",
             duration: 5000,
-          });
+          })
         }
       } catch (error) {
-        console.error('Error during file upload:', error);
+        console.error("Error during file upload:", error)
         toast({
           title: "Upload failed!",
           description: `Network error during upload of "${file.name}".`,
           variant: "destructive",
           duration: 5000,
-        });
+        })
       }
 
       // Clear the file input value to allow re-uploading the same file
-      event.target.value = '';
+      event.target.value = ""
     }
-  };
+  }
 
   const handleDeleteMessage = (id: number) => {
-    setMessages(messages.filter(message => message.id !== id));
-  };
+    setMessages(messages.filter((message) => message.id !== id))
+  }
 
   const handleDeleteUploadedFile = async (filename: string) => {
     try {
       const response = await fetch(`/api/files/${filename}`, {
-        method: 'DELETE',
-      });
+        method: "DELETE",
+      })
       if (response.ok) {
-        setUploadedFiles(prevFiles => prevFiles.filter(file => file.id !== filename));
+        setUploadedFiles((prevFiles) => prevFiles.filter((file) => file.id !== filename))
         toast({
           title: "File deleted!",
           description: `"${filename}" has been removed.`,
           duration: 3000,
-        });
+        })
       } else {
-        const errorData = await response.json();
-        console.error('Failed to delete file:', errorData);
+        const errorData = await response.json()
+        console.error("Failed to delete file:", errorData)
         toast({
           title: "Deletion failed!",
-          description: `Error deleting "${filename}": ${errorData.error || 'Unknown error'}`,
+          description: `Error deleting "${filename}": ${errorData.error || "Unknown error"}`,
           variant: "destructive",
           duration: 5000,
-        });
+        })
       }
     } catch (error) {
-      console.error('Error deleting file:', error);
+      console.error("Error deleting file:", error)
       toast({
-          title: "Deletion failed!",
-          description: `Network error deleting "${filename}".`,
-          variant: "destructive",
-          duration: 5000,
-        });
+        title: "Deletion failed!",
+        description: `Network error deleting "${filename}".`,
+        variant: "destructive",
+        duration: 5000,
+      })
     }
-  };
+  }
 
   const handleNewChat = () => {
     setMessages([
-      { id: ++messageIdCounter.current, text: 'Hello! How can I assist you with your contract today?', sender: 'ai' },
-    ]);
-    setInputMessage('');
-  };
+      { id: ++messageIdCounter.current, text: "Hello! How can I assist you with your contract today?", sender: "ai" },
+    ])
+    setInputMessage("")
+  }
 
   return (
     <div ref={containerRef} className="flex h-screen overflow-hidden font-sans">
@@ -341,10 +363,7 @@ export default function ThreePanelLayout() {
           <>
             <div className="p-4 flex-1 overflow-auto custom-scrollbar">
               {/* New Chat Button */}
-              <Button
-                onClick={handleNewChat}
-                className="w-full bg-blue-600 text-white hover:bg-blue-700 mb-4"
-              >
+              <Button onClick={handleNewChat} className="w-full bg-blue-600 text-white hover:bg-blue-700 mb-4">
                 <Plus className="mr-2 h-4 w-4" /> New Chat
               </Button>
 
@@ -366,13 +385,18 @@ export default function ThreePanelLayout() {
                 {uploadedFiles.length === 0 ? (
                   <p className="text-gray-400 text-center py-4">No files uploaded yet.</p>
                 ) : (
-                  uploadedFiles.map((file) => (
-                    <div key={file.id} className="relative group py-1 text-sm cursor-pointer hover:bg-gray-700 rounded-sm flex items-center justify-between pr-8">
+                  uploadedFiles.map((file, index) => (
+                    <div
+                      key={file.id}
+                      className={`relative group py-1 text-sm cursor-pointer hover:bg-gray-700 rounded-sm flex items-center justify-between pr-8 ${
+                        index < uploadedFiles.length - 1 ? "border-b border-gray-700 mb-1 pb-1" : ""
+                      }`}
+                    >
                       <span className="flex-1 truncate">{file.name}</span>
                       <button
                         onClick={(e) => {
-                          e.stopPropagation(); // Prevent triggering parent click
-                          handleDeleteUploadedFile(file.id);
+                          e.stopPropagation() // Prevent triggering parent click
+                          handleDeleteUploadedFile(file.id)
                         }}
                         className="absolute top-1/2 -translate-y-1/2 right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                         aria-label={`Delete file ${file.name}`}
@@ -397,14 +421,15 @@ export default function ThreePanelLayout() {
         )}
         {/* Left Panel Toggle Button - now in the middle panel */}
       </aside>
-
       {/* Middle Content Area */}
       <main className="flex-1 bg-black text-white p-4 flex flex-col relative">
-        <div className="flex items-center gap-2 mb-4"> {/* New flex container for icon and title */}
+        <div className="flex items-center gap-2 mb-4">
+          {" "}
+          {/* New flex container for icon and title */}
           <button
             onClick={toggleLeftPanel}
             className="bg-black text-white p-1 rounded-full shadow-md z-10 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
-            aria-label={isLeftPanelCollapsed ? 'Expand left panel' : 'Collapse left panel'}
+            aria-label={isLeftPanelCollapsed ? "Expand left panel" : "Collapse left panel"}
           >
             <PanelToggleIcon isCollapsed={isLeftPanelCollapsed} isLeftPanel={true} />
           </button>
@@ -418,22 +443,19 @@ export default function ThreePanelLayout() {
         </div>
         {/* Chat messages area */}
         <div className="flex-1 bg-gray-900 mt-4 p-4 rounded-md overflow-auto shadow-inner flex flex-col space-y-4 custom-scrollbar">
-          {messages.map(message => (
+          {messages.map((message) => (
             <div
               key={message.id}
-              className={`relative p-2 rounded-lg max-w-[80%] group ${ // Added group for hover effect
-                message.sender === 'user'
-                  ? 'bg-blue-900 self-end text-right ml-auto'
-                  : 'bg-gray-700 self-start'
+              className={`relative p-2 rounded-lg max-w-[80%] group ${
+                // Added group for hover effect
+                message.sender === "user" ? "bg-blue-900 self-end text-right ml-auto" : "bg-gray-700 self-start"
               }`}
             >
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
-                {message.text}
-              </ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{message.text}</ReactMarkdown>
               <button
                 onClick={() => handleDeleteMessage(message.id)}
                 className={`absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
-                  message.sender === 'user' ? '-left-2 right-auto' : '' // Adjust position for user messages
+                  message.sender === "user" ? "-left-2 right-auto" : "" // Adjust position for user messages
                 }`}
                 aria-label="Delete message"
               >
@@ -452,7 +474,7 @@ export default function ThreePanelLayout() {
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            disabled={messages.some(msg => (msg as any).isThinking)} // Disable input while thinking
+            disabled={messages.some((msg) => (msg as any).isThinking)} // Disable input while thinking
           />
           {/* Hidden file input */}
           <input
@@ -460,13 +482,13 @@ export default function ThreePanelLayout() {
             ref={fileInputRef}
             onChange={handleFileChange}
             className="hidden"
-            disabled={messages.some(msg => (msg as any).isThinking)} // Disable upload while thinking
+            disabled={messages.some((msg) => (msg as any).isThinking)} // Disable upload while thinking
           />
           <button
             onClick={handleUploadClick}
             className="bg-gray-700 text-white p-2 rounded-md hover:bg-gray-600 flex items-center justify-center w-10 h-10"
             aria-label="Upload file"
-            disabled={messages.some(msg => (msg as any).isThinking)} // Disable button while thinking
+            disabled={messages.some((msg) => (msg as any).isThinking)} // Disable button while thinking
           >
             <Paperclip className="w-5 h-5" />
           </button>
@@ -474,7 +496,7 @@ export default function ThreePanelLayout() {
             onClick={handleSendMessage}
             className="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 flex items-center justify-center w-10 h-10"
             aria-label="Send message"
-            disabled={messages.some(msg => (msg as any).isThinking)} // Disable button while thinking
+            disabled={messages.some((msg) => (msg as any).isThinking)} // Disable button while thinking
           >
             <Send className="w-5 h-5" />
           </button>
@@ -484,16 +506,18 @@ export default function ThreePanelLayout() {
         <button
           onClick={toggleRightPanel}
           className="absolute top-4 right-4 bg-black text-white p-1 rounded-full shadow-md z-10 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
-          aria-label={rightPanelWidth === COLLAPSED_PANEL_WIDTH ? 'Expand right panel' : 'Collapse right panel'}
+          aria-label={rightPanelWidth === COLLAPSED_PANEL_WIDTH ? "Expand right panel" : "Collapse right panel"}
         >
           <PanelToggleIcon isCollapsed={rightPanelWidth === COLLAPSED_PANEL_WIDTH} isLeftPanel={false} />
         </button>
       </main>
-
       {/* Right Panel */}
       <aside
         className={`relative flex-shrink-0 transition-all duration-300 ease-in-out bg-[#0f172a] text-white flex flex-col`}
-        style={{ width: rightPanelWidth === COLLAPSED_PANEL_WIDTH ? `${COLLAPSED_PANEL_WIDTH}px` : `${rightPanelWidth}px`, minWidth: `${COLLAPSED_PANEL_WIDTH}px` }}
+        style={{
+          width: rightPanelWidth === COLLAPSED_PANEL_WIDTH ? `${COLLAPSED_PANEL_WIDTH}px` : `${rightPanelWidth}px`,
+          minWidth: `${COLLAPSED_PANEL_WIDTH}px`,
+        }}
       >
         {/* Drag Handle */}
         <div
@@ -505,7 +529,9 @@ export default function ThreePanelLayout() {
         {/* Conditional rendering for right panel content */}
         {rightPanelWidth > COLLAPSED_PANEL_WIDTH && (
           <div className="p-4 flex-1 overflow-auto custom-scrollbar">
-            <div className="flex flex-col gap-2 mb-4"> {/* Container for the two new buttons */}
+            <div className="flex flex-col gap-2 mb-4">
+              {" "}
+              {/* Container for the two new buttons */}
               <button
                 onClick={() => setIsTableVisible(!isTableVisible)}
                 className="w-full text-left text-lg font-bold flex items-center justify-between bg-transparent border-none text-white p-0 cursor-pointer focus:outline-none"
@@ -513,7 +539,11 @@ export default function ThreePanelLayout() {
                 aria-controls="table-content"
               >
                 Extracted Data Table
-                {isTableVisible ? <ChevronUp className="w-5 h-5 stroke-white ml-2" /> : <ChevronDown className="w-5 h-5 stroke-white ml-2" />}
+                {isTableVisible ? (
+                  <ChevronUp className="w-5 h-5 stroke-white ml-2" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 stroke-white ml-2" />
+                )}
               </button>
               {isTableVisible && (
                 <div id="table-content" className="bg-gray-800 p-2 rounded-md overflow-auto mb-4 custom-scrollbar">
@@ -543,7 +573,6 @@ export default function ThreePanelLayout() {
                   </table>
                 </div>
               )}
-
               <button
                 onClick={() => setIsContractVisible(!isContractVisible)}
                 className="w-full text-left text-lg font-bold flex items-center justify-between bg-transparent border-none text-white p-0 cursor-pointer focus:outline-none"
@@ -551,17 +580,25 @@ export default function ThreePanelLayout() {
                 aria-controls="contract-content"
               >
                 Generated Contract
-                {isContractVisible ? <ChevronUp className="w-5 h-5 stroke-white ml-2" /> : <ChevronDown className="w-5 h-5 stroke-white ml-2" />}
+                {isContractVisible ? (
+                  <ChevronUp className="w-5 h-5 stroke-white ml-2" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 stroke-white ml-2" />
+                )}
               </button>
               {isContractVisible && (
-                <div id="contract-content" className="bg-gray-800 p-2 rounded-md overflow-auto h-[200px] custom-scrollbar">
+                <div
+                  id="contract-content"
+                  className="bg-gray-800 p-2 rounded-md overflow-auto h-[200px] custom-scrollbar"
+                >
                   <p className="text-sm">This panel displays the generated contract.</p>
                   <p className="text-xs mt-2">Review the full contract here.</p>
                   <p className="text-xs mt-2">
-                    This is a preview of the generated contract based on the conversation and extracted data.
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                    This is a preview of the generated contract based on the conversation and extracted data. Lorem
+                    ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
+                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+                    aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+                    cillum dolore eu fugiat nulla pariatur.
                   </p>
                 </div>
               )}
@@ -574,21 +611,23 @@ export default function ThreePanelLayout() {
         )}
         {/* The main toggle button for the right panel is in the middle panel */}
       </aside>
-
       {/* Settings Modal */}
       <Dialog open={showSettingsModal} onOpenChange={setShowSettingsModal}>
-        <DialogContent className="sm:max-w-[425px] bg-gray-800 text-white border-gray-700">
-          <DialogHeader>
-            <DialogTitle>Settings</DialogTitle>
-            <DialogDescription>
-              Manage your application settings.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <Button variant="ghost" className="justify-start text-left text-white hover:bg-gray-700">Knowledge Graph</Button>
-            <Button variant="ghost" className="justify-start text-left text-white hover:bg-gray-700">Connectors</Button>
-          </div>
-        </DialogContent>
+      <DialogContent className="sm:max-w-[425px] bg-gray-800 text-white border-gray-700">
+        <DialogHeader>
+          <DialogTitle>Settings</DialogTitle>
+          <DialogDescription>Manage your application settings.</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <Button variant="ghost" className="justify-start text-left text-white hover:bg-gray-700">
+            Knowledge Graph
+          </Button>
+          <Button variant="ghost" className="justify-start text-left text-white hover:bg-gray-700">
+            Connectors
+          </Button>
+            <LogoutButton />
+        </div>
+      </DialogContent>
       </Dialog>
       <Toaster /> {/* Add the Toaster component here */}
     </div>
