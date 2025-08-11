@@ -354,7 +354,7 @@ export default function ThreePanelLayout() {
                 placeholder="Search files..."
                 className="w-full p-2 mb-4 border border-gray-700 rounded-md bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <h2 className="text-xl font-bold mb-4">Uploaded Files</h2>
+              <h2 className="text-xl font-bold mb-4">Knowledge Base</h2>
               <p className="text-sm">{""}</p>
               <p className="text-xs mt-2">{""}</p>
               <div className="mt-4 text-xs text-gray-400">
@@ -585,7 +585,7 @@ export default function ThreePanelLayout() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <Button variant="ghost" className="justify-start text-left text-white hover:bg-gray-700">Knowledge Base</Button>
+            <Button variant="ghost" className="justify-start text-left text-white hover:bg-gray-700">Knowledge Graph</Button>
             <Button variant="ghost" className="justify-start text-left text-white hover:bg-gray-700">Connectors</Button>
           </div>
         </DialogContent>
