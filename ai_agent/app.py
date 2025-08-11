@@ -24,7 +24,7 @@ from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader, UnstructuredPDFLoader
 from werkzeug.utils import secure_filename
-import uuid  # Import uuid for generating unique IDs
+
 
 # === Load environment variables ===
 load_dotenv()
