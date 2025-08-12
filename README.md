@@ -76,3 +76,7 @@ Follow these instructions to get the project up and running on your local machin
       npm run dev
       ```
     - Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+  
+**Made with ❤️ by Akash Gunasekar**
+
+_Star ⭐ this repo if it helped you build something awesome!_
