@@ -381,7 +381,7 @@ export default function ThreePanelLayout() {
                 <p>{""}</p>
               </div>
               {/* Uploaded files list */}
-              <div className="h-[300px] bg-gray-800 mt-4 p-2 rounded-md overflow-auto custom-scrollbar">
+              <div className="h-[350px] bg-gray-800 mt-4 p-2 rounded-md overflow-auto custom-scrollbar">
                 {uploadedFiles.length === 0 ? (
                   <p className="text-gray-400 text-center py-4">No files uploaded yet.</p>
                 ) : (
@@ -409,14 +409,14 @@ export default function ThreePanelLayout() {
               </div>
             </div>
             {/* Settings Button */}
-            <div className="p-4 border-t border-gray-700">
+            {/* <div className="p-4 border-t border-gray-700">
               <Button
                 onClick={() => setShowSettingsModal(true)}
                 className="w-full bg-gray-800 text-white hover:bg-gray-700"
               >
                 <Settings className="mr-2 h-4 w-4" /> Settings
               </Button>
-            </div>
+            </div> */}
           </>
         )}
         {/* Left Panel Toggle Button - now in the middle panel */}
@@ -612,7 +612,7 @@ export default function ThreePanelLayout() {
         {/* The main toggle button for the right panel is in the middle panel */}
       </aside>
       {/* Settings Modal */}
-      <Dialog open={showSettingsModal} onOpenChange={setShowSettingsModal}>
+      {/* <Dialog open={showSettingsModal} onOpenChange={setShowSettingsModal}>
       <DialogContent className="sm:max-w-[425px] bg-gray-800 text-white border-gray-700">
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
@@ -629,7 +629,7 @@ export default function ThreePanelLayout() {
         </div>
       </DialogContent>
       </Dialog>
-      <Toaster /> {/* Add the Toaster component here */}
+      <Toaster />  */}
     </div>
   )
 }

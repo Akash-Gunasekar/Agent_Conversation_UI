@@ -1,5 +1,11 @@
 import ThreePanelLayout from "@/components/three-panel-layout"
+import { Header } from "@/components/header"
 
 export default function DashboardPage() {
-  return <ThreePanelLayout />
+  return (
+    <>
+      <Header />
+      <ThreePanelLayout />
+    </>
+  );
 }

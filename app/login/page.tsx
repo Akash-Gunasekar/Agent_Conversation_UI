@@ -9,64 +9,59 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
-import { Toaster } from "@/components/ui/toaster"
+import { toast } from "sonner"
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const { toast } = useToast()
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
 
-    // Default credentials
-    const defaultUsername = "Admin"
-    const defaultPassword = "Admin@123$"
-
-    if (username === defaultUsername && password === defaultPassword) {
-      toast({
-        title: "Login Successful!",
-        description: "Redirecting to dashboard...",
-        duration: 2000,
-      })
-      // In a real app, you'd set a session/token here
-      router.push("/dashboard") // Redirect to the new dashboard page
+    // Static credentials validation
+    if (email === "admin@conceptvines.com" && password === "Admin@123$") {
+      toast.success("Login successful!")
+      setTimeout(() => {
+        router.push("/dashboard")
+      }, 1000)
     } else {
-      toast({
-        title: "Login Failed",
-        description: "Invalid username or password.",
-        variant: "destructive",
-        duration: 3000,
-      })
+      toast.error("Invalid credentials. Please check your email and password.")
     }
+
+    setIsLoading(false)
   }
 
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-foreground">
-      <Card className="w-full max-w-md bg-card bg-foreground01 text-background border-border shadow-lg">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold">Login</CardTitle>
-          <CardDescription className="text-muted-foreground">
-            Enter your credentials to access your account.
-          </CardDescription>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-gray-800 border-gray-700">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center text-white">Welcome to RegIQ</CardTitle>
+          <CardDescription className="text-center text-gray-400">Sign in to your account to continue</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="username">Username</Label>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-gray-300">
+                Email
+              </Label>
               <Input
-                id="username"
-                type="text"
-                placeholder="Admin"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="email"
+                type="email"
+                placeholder="admin@conceptvines.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-input text-foreground border-border focus:ring-ring"
+                className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-gray-300">
+                Password
+              </Label>
               <Input
                 id="password"
                 type="password"
@@ -74,16 +69,15 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-input text-foreground border-border focus:ring-ring"
+                className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
               />
             </div>
-            <Button type="submit" className="bg-[var(--chart-6)] text-black hover:bg-[var(--chart-7)]">
-              Login
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={isLoading}>
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
         </CardContent>
       </Card>
-      <Toaster />
     </div>
   )
 }

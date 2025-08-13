@@ -1,142 +1,173 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { RocketIcon, LightbulbIcon, ShieldCheckIcon, WorkflowIcon, QuoteIcon } from "lucide-react"
+"use client"
+
 import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { NeuralNetwork } from "@/components/neural-network"
+import { Shield, FileText, BarChart3, Users, AlertTriangle, CheckCircle, ArrowRight } from "lucide-react"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-foreground01 text-background flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
       {/* Hero Section */}
-      <section className="relative w-full py-20 md:py-32 lg:py-48 flex items-center justify-center text-center">
-        <div className="container px-4 md:px-6 z-10">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter leading-tight mb-6">
-            Welcome to RegIQ
-          <div className="relative">
-            Your Compliance Partner
-          </div>
-            
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Discover powerful features designed to streamline your workflow and enhance your productivity.
-          </p>
-          <Link href="/login" passHref>
-            <Button size="lg" className="bg-[var(--chart-6)] text-black hover:bg-[var(--chart-7)]">
-              Get Started
-            </Button>
-          </Link>
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/20">
+          <NeuralNetwork />
         </div>
-      </section>
-
-      {/* About RegIQ Section */}
-      <section className="w-full py-16 md:py-24 bg-background text-foreground">
-        <div className="container px-4 md:px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8">About RegIQ</h2>
-          <p className="text-lg md:text-xl max-w-4xl mx-auto leading-relaxed">
-            RegIQ is an innovative platform designed to simplify and automate regulatory compliance for businesses of
-            all sizes. We understand the complexities of navigating ever-changing regulations, and our mission is to
-            provide a robust, intuitive solution that ensures your operations remain compliant, secure, and efficient.
-            From automated reporting to real-time risk assessment, RegIQ empowers you to focus on growth while we handle
-            the intricacies of compliance.
-          </p>
+        <div className="relative z-10 container mx-auto px-4 py-24">
+          <div className="text-center max-w-4xl mx-auto">
+            <Badge className="mb-4 bg-blue-600/20 text-blue-300 border-blue-500/30">
+              AI-Powered Compliance Platform
+            </Badge>
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">RegIQ</h1>
+            <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed">
+              Intelligent regulatory compliance management powered by advanced AI. Streamline your compliance processes,
+              reduce risk, and stay ahead of regulatory changes.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/login" passHref>
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
+                  Get Started
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-3 bg-transparent"
+              >
+                Watch Demo
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="w-full py-16 md:py-24 bg-foreground01">
-        <div className="container px-4 md:px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Key Features</h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="bg-background border-border shadow-lg">
-              <CardHeader className="flex flex-col items-center text-center">
-                <RocketIcon className="h-12 w-12 text-primary mb-4" />
-                <CardTitle className="text-2xl font-semibold">Blazing Fast</CardTitle>
+      <section className="py-24 bg-gray-900/50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Comprehensive Compliance Solutions</h2>
+            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+              Our AI-driven platform provides end-to-end compliance management, from document analysis to risk
+              assessment and regulatory monitoring.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Card className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors">
+              <CardHeader>
+                <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center mb-4">
+                  <FileText className="h-6 w-6 text-blue-400" />
+                </div>
+                <CardTitle className="text-white">Document Analysis</CardTitle>
+                <CardDescription className="text-gray-400">
+                  AI-powered document review and compliance checking with real-time insights.
+                </CardDescription>
               </CardHeader>
-              <CardContent className="text-center text-muted-foreground">
-                Experience unparalleled speed and performance with our optimized infrastructure.
-              </CardContent>
             </Card>
-            <Card className="bg-background border-border shadow-lg">
-              <CardHeader className="flex flex-col items-center text-center">
-                <LightbulbIcon className="h-12 w-12 text-primary mb-4" />
-                <CardTitle className="text-2xl font-semibold">Intuitive Design</CardTitle>
+
+            <Card className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors">
+              <CardHeader>
+                <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center mb-4">
+                  <Shield className="h-6 w-6 text-green-400" />
+                </div>
+                <CardTitle className="text-white">Risk Assessment</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Comprehensive risk evaluation with predictive analytics and mitigation strategies.
+                </CardDescription>
               </CardHeader>
-              <CardContent className="text-center text-muted-foreground">
-                A user-friendly interface that makes complex tasks simple and enjoyable.
-              </CardContent>
             </Card>
-            <Card className="bg-background border-border shadow-lg">
-              <CardHeader className="flex flex-col items-center text-center">
-                <ShieldCheckIcon className="h-12 w-12 text-primary mb-4" />
-                <CardTitle className="text-2xl font-semibold">Secure & Reliable</CardTitle>
+
+            <Card className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors">
+              <CardHeader>
+                <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center mb-4">
+                  <BarChart3 className="h-6 w-6 text-purple-400" />
+                </div>
+                <CardTitle className="text-white">Regulatory Monitoring</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Stay updated with real-time regulatory changes and compliance requirements.
+                </CardDescription>
               </CardHeader>
-              <CardContent className="text-center text-muted-foreground">
-                Your data is protected with industry-leading security measures and constant reliability.
-              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors">
+              <CardHeader>
+                <div className="w-12 h-12 bg-yellow-600/20 rounded-lg flex items-center justify-center mb-4">
+                  <Users className="h-6 w-6 text-yellow-400" />
+                </div>
+                <CardTitle className="text-white">Team Collaboration</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Seamless collaboration tools for compliance teams with role-based access.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors">
+              <CardHeader>
+                <div className="w-12 h-12 bg-red-600/20 rounded-lg flex items-center justify-center mb-4">
+                  <AlertTriangle className="h-6 w-6 text-red-400" />
+                </div>
+                <CardTitle className="text-white">Alert Management</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Intelligent alerting system for compliance violations and deadline tracking.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors">
+              <CardHeader>
+                <div className="w-12 h-12 bg-indigo-600/20 rounded-lg flex items-center justify-center mb-4">
+                  <CheckCircle className="h-6 w-6 text-indigo-400" />
+                </div>
+                <CardTitle className="text-white">Audit Trail</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Complete audit trail with detailed logging and compliance reporting.
+                </CardDescription>
+              </CardHeader>
             </Card>
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="w-full py-16 md:py-24 bg-background text-foreground">
-        <div className="container px-4 md:px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">How RegIQ Works</h2>
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="flex flex-col items-center text-center p-6 rounded-lg bg-foreground01 text-background shadow-lg">
-              <WorkflowIcon className="h-12 w-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold mb-2">1. Configure Your Needs</h3>
-              <p className="text-muted-foreground">
-                Easily set up your compliance profiles and integrate with your existing systems.
-              </p>
+      {/* Stats Section */}
+      <section className="py-24 bg-gray-800/30">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div>
+              <div className="text-4xl md:text-5xl font-bold text-blue-400 mb-2">99.9%</div>
+              <div className="text-gray-300 text-lg">Compliance Accuracy</div>
             </div>
-            <div className="flex flex-col items-center text-center p-6 rounded-lg bg-foreground01 text-background shadow-lg">
-              <LightbulbIcon className="h-12 w-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold mb-2">2. Automate Monitoring</h3>
-              <p className="text-muted-foreground">
-                RegIQ continuously monitors regulatory changes and your operational data.
-              </p>
+            <div>
+              <div className="text-4xl md:text-5xl font-bold text-green-400 mb-2">75%</div>
+              <div className="text-gray-300 text-lg">Time Reduction</div>
             </div>
-            <div className="flex flex-col items-center text-center p-6 rounded-lg bg-foreground01 text-background shadow-lg">
-              <ShieldCheckIcon className="h-12 w-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold mb-2">3. Ensure Compliance</h3>
-              <p className="text-muted-foreground">
-                Receive real-time alerts and generate comprehensive reports to maintain compliance.
-              </p>
+            <div>
+              <div className="text-4xl md:text-5xl font-bold text-purple-400 mb-2">500+</div>
+              <div className="text-gray-300 text-lg">Enterprise Clients</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Call to Action Section */}
-      <section className="w-full py-16 md:py-24 bg-primary text-primary-foreground text-center">
-        <div className="container px-4 md:px-6">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to Boost Your IQ?
+      {/* CTA Section */}
+      <section className="py-24">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+            Ready to Transform Your Compliance Management?
           </h2>
-          <p className="max-w-2xl mx-auto text-lg mb-8 text-primary-foreground/90">
-            Unlock the full potential of your knowledge. Our intelligent platform helps you 
-            learn faster, think smarter, and make better decisions — whether you're preparing 
-            for big goals or simply expanding your curiosity.
+          <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+            Join hundreds of organizations that trust RegIQ for their compliance needs.
           </p>
           <Link href="/login" passHref>
-            <Button
-              size="lg"
-              variant="secondary"
-              className="bg-[var(--chart-6)] text-black hover:bg-[var(--chart-7)]"
-            >
-              Sign Up Now
+            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
+              Start Your Free Trial
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
         </div>
       </section>
-
-
-      {/* Footer */}
-      <footer className="w-full py-8 bg-foreground01 text-muted-foreground text-center">
-        <div className="container px-4 md:px-6">
-          <p>&copy; {new Date().getFullYear()} RegIQ. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   )
 }
