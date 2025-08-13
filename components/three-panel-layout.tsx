@@ -12,6 +12,7 @@ import remarkBreaks from "remark-breaks" // Import remarkBreaks for handling sin
 import { useToast } from "@/components/ui/use-toast" // Import useToast hook
 import { Toaster } from "@/components/ui/toaster" // Import Toaster component
 import LogoutButton from "@/components/ui/logout-button" // Import logout
+import { Header } from "@/components/header"
 
 const DEFAULT_LEFT_PANEL_WIDTH = 250
 const DEFAULT_RIGHT_PANEL_WIDTH = 450
@@ -351,6 +352,10 @@ export default function ThreePanelLayout() {
   }
 
   return (
+    <div className="flex flex-col h-screen">
+      {/* Header at the top */}
+      <Header />
+
     <div ref={containerRef} className="flex h-screen overflow-hidden font-sans">
       {/* Left Panel */}
       <aside
@@ -630,6 +635,7 @@ export default function ThreePanelLayout() {
       </DialogContent>
       </Dialog>
       <Toaster />  */}
+    </div>
     </div>
   )
 }
